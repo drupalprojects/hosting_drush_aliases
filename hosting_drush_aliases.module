@@ -43,7 +43,7 @@ function hosting_drush_aliases_page($server = NULL){
   
   // Server is specified: Find all sites
   $query = db_query(
-    'SELECT title AS uri, publish_path AS root
+    'SELECT title AS uri, publish_path AS root, n.nid
       FROM {node} n
         LEFT JOIN {hosting_site} hs ON n.nid = hs.nid
         LEFT JOIN {hosting_platform} hp ON hs.platform = hp.nid
@@ -51,13 +51,17 @@ function hosting_drush_aliases_page($server = NULL){
   );
   $output_aliases = '';
   while ($result = db_fetch_array($query)){
+    // Load site for the hook
+    $site_node = node_load($result['nid']);
     
     // Add to and remove items from alias array
+    unset($result['nid']);
     $result['remote-host'] = $server;
     $result['remote-user'] = variable_get('hosting_drush_aliases_remote_user', 'aegir');
     
-    // Generate alias name  (Hook here?)
-    $alias_name = $result['uri'];
+    // Generate alias name
+    $names_options = module_invoke_all('hosting_drush_aliases_name', $site_node);
+    $alias_name = array_pop($names_options);
     
     // Create output
     $output_aliases .= "\$aliases['$alias_name'] = " .  var_export($result, 1) . ';';
@@ -70,4 +74,11 @@ function hosting_drush_aliases_page($server = NULL){
   $output .= $output_aliases;
   print $output;
   exit;
+}
+
+/**
+ * Implements hook_hosting_drush_aliases_name()
+ */
+function hosting_drush_aliases_hosting_drush_aliases_name($node) {
+  return $node->title;
 }
