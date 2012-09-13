@@ -1,0 +1,6 @@
+name = Hosting Drush Aliases
+description = Provides a link to let privileged users download a drush alias file for all sites.
+package = Hosting
+dependencies[] = hosting
+
+core = 6.x

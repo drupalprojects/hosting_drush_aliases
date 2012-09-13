@@ -1,0 +1,57 @@
+<?php
+/**
+ * @file hosting_drush_aliases.module
+ */
+
+/**
+ * Implements hook_menu()
+ */
+function hosting_drush_aliases_menu() {
+  $items = array();
+
+  $items['aliases'] = array(
+    'title' => 'Download Drush Aliases', 
+    'page callback' => 'hosting_drush_aliases_page', 
+    'access arguments' => array('access hosting drush aliases'), 
+  );
+  return $items;
+}
+
+/**
+ * Menu Callback for /aliases.drushrc.php
+ */
+function hosting_drush_aliases_page($server = NULL){
+  
+  // If no server specified, provide a list
+  if (!$server){
+    $items = array();
+    $query = db_query('SELECT title FROM {node} WHERE type = "server" AND status = 1 ORDER BY title desc');
+    while ($result = db_fetch_object($query)){
+      $items[] = l($result->title, "aliases/$result->title/aliases.drushrc.php");
+    }
+    return theme('item_list', $items);
+  }
+  
+  // Server is specified: Find all sites
+  $query = db_query(
+    'SELECT title AS uri, publish_path AS root
+      FROM {node} n
+        LEFT JOIN {hosting_site} hs ON n.nid = hs.nid
+        LEFT JOIN {hosting_platform} hp ON hs.platform = hp.nid
+        WHERE n.type = "site" AND n.status = 1 ORDER BY title desc'
+  );
+  $output_aliases = '';
+  while ($result = db_fetch_array($query)){
+    $result['remote-host'] = $server;
+    $result['remote-user'] = variable_get('hosting_drush_aliases_remote_user', 'aegir');
+    $alias_name = $result['uri'];
+    $output_aliases .= "\$aliases[$alias_name] = " .  var_export($result, 1) . ';';
+    $output_aliases .= "\n";
+  }
+  
+  header("Content-type: text/plain");
+  $output .= "<?php\n";
+  $output .= $output_aliases;
+  print $output;
+  exit;
+}
