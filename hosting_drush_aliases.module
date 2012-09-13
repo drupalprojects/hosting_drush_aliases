@@ -18,6 +18,12 @@ function hosting_drush_aliases_menu() {
 }
 
 /**
+ * Implements hook_perm()
+ */
+function hosting_drush_aliases_perm() {
+  return array('access hosting drush aliases');
+}
+/**
  * Menu Callback for /aliases.drushrc.php
  */
 function hosting_drush_aliases_page($server = NULL){
