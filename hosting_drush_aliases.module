@@ -67,7 +67,7 @@ function hosting_drush_aliases_page($server = NULL){
     
     // Generate alias name
     $names_options = module_invoke_all('hosting_drush_aliases_name', $site_node);
-    $alias_name = array_pop($names_options);
+    $alias_name = empty($names_options)? $result['uri']: array_pop($names_options);
     
     // Create output
     $output_aliases .= "\$aliases['$alias_name'] = " .  var_export($result, 1) . ';';
@@ -80,11 +80,4 @@ function hosting_drush_aliases_page($server = NULL){
   $output .= $output_aliases;
   print $output;
   exit;
-}
-
-/**
- * Implements hook_hosting_drush_aliases_name()
- */
-function hosting_drush_aliases_hosting_drush_aliases_name($node) {
-  return $node->title;
 }
