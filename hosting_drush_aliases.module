@@ -23,6 +23,7 @@ function hosting_drush_aliases_menu() {
 function hosting_drush_aliases_perm() {
   return array('access hosting drush aliases');
 }
+
 /**
  * Menu Callback for /aliases.drushrc.php
  */
@@ -30,19 +31,18 @@ function hosting_drush_aliases_page($server = NULL){
   
   // If no server specified, provide a list
   if (!$server){
-    $items = array();
-    $query = db_query('SELECT title, nid FROM {node} WHERE type = "server" AND status = 1 ORDER BY title desc');
-    while ($result = db_fetch_object($query)){
-      // Load the server to detect the http service
-      $node = node_load($result->nid);
-      if (isset($node->services['http'])){
-        $items[] = l($result->title, "aliases/$result->title/aliases.drushrc.php");
-      }
-    }
+    $servers = hosting_get_servers('http');
+   
     // If only one, set $server and continue
-    if (count($items) == 1){
-      $server = $result->title;
-    } else {
+    if (count($servers) == 1){
+      $server = array_pop($servers);
+    }
+    // If there are many, let user choose server
+    else {
+      $items = array();
+      foreach ($servers as $nid => $server){
+        $items[] = l($servers, "aliases/$servers/aliases.drushrc.php");
+      }
       return theme('item_list', $items);
     }
   }
