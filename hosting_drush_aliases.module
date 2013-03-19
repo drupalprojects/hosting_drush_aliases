@@ -41,7 +41,7 @@ function hosting_drush_aliases_page($server = NULL){
     else {
       $items = array();
       foreach ($servers as $nid => $server){
-        $items[] = l($servers, "aliases/$servers/aliases.drushrc.php");
+        $items[] = l($server, "aliases/$server/aliases.drushrc.php");
       }
       return theme('item_list', $items);
     }
